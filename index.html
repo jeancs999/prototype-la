@@ -1134,9 +1134,11 @@
     }, 900);
   }
 
-  function cellSize() {
-    return board.clientWidth / maze.length;
-  }
+  let cachedCellSize = 0;
+
+function cellSize() {
+  return cachedCellSize || board.clientWidth / maze.length;
+}
 
   function cellCenter(value) {
     return (value + 0.5) * cellSize();
@@ -1156,85 +1158,106 @@
   }
 
   function drawMaze() {
-    board.style.setProperty("--cell-size", `${cellSize()}px`);
-    walls.forEach((item) => item.remove());
-    medals.forEach((item) => item.element.remove());
-    cups.forEach((item) => item.element.remove());
-    rivals.forEach((item) => item.element.remove());
-    if (playerElement) playerElement.remove();
+  cachedCellSize = board.clientWidth / maze.length;
+  board.style.setProperty("--cell-size", `${cachedCellSize}px`);
 
-    walls = [];
-    medals = [];
-    cups = [];
-    rivals = [];
-    medalsLeft = 0;
+  walls.forEach((item) => item.remove());
+  medals.forEach((item) => item.element.remove());
+  cups.forEach((item) => item.element.remove());
+  rivals.forEach((item) => item.element.remove());
 
-    maze.forEach((row, y) => {
-      row.split("").forEach((cell, x) => {
-        if (cell === "#") {
-          const wall = document.createElement("span");
-          wall.className = "owg-wall";
-          wall.style.left = `${x * cellSize()}px`;
-          wall.style.top = `${y * cellSize()}px`;
-          wall.style.width = `${cellSize()}px`;
-          wall.style.height = `${cellSize()}px`;
-          board.appendChild(wall);
-          walls.push(wall);
-          return;
-        }
-
-        if (cell === "." || cell === "o") {
-          const element = document.createElement("span");
-          element.className = cell === "o" ? "owg-cup" : "owg-medal";
-
-const img = document.createElement("img");
-img.src = cell === "o" ? gameImages.cup : gameImages.medal;
-img.alt = cell === "o" ? "Copa" : "Medalla";
-img.draggable = false;
-
-element.appendChild(img);
-placeElement(element, x, y);
-board.appendChild(element);
-
-          if (cell === "o") {
-            cups.push({ x, y, element });
-          } else {
-            medals.push({ x, y, element });
-            medalsLeft++;
-          }
-        }
-      });
-    });
-
-    playerElement = document.createElement("span");
-    playerElement.className = "owg-player";
-    playerElement.dataset.dir = player.dir;
-    board.appendChild(playerElement);
-    placeElement(playerElement, player.x, player.y);
-
-    rivalStarts.slice(0, selectedDifficulty.rivals).forEach((start, index) => {
-      const element = document.createElement("span");
-      element.className = "owg-lifeguard";
-
-const img = document.createElement("img");
-img.src = index % 2 ? gameImages.rivalB : gameImages.rivalA;
-img.alt = "Rival";
-img.draggable = false;
-
-element.appendChild(img);
-board.appendChild(element);
-      rivals.push({
-        x: start.x,
-        y: start.y,
-        startX: start.x,
-        startY: start.y,
-        dir: index % 2 ? "down" : "right",
-        element
-      });
-      placeElement(element, start.x, start.y);
-    });
+  if (playerElement) {
+    playerElement.remove();
   }
 
+  walls = [];
+  medals = [];
+  cups = [];
+  rivals = [];
+  medalsLeft = 0;
+
+  const fragment = document.createDocumentFragment();
+  const size = cachedCellSize;
+
+  maze.forEach((row, y) => {
+    row.split("").forEach((cell, x) => {
+      if (cell === "#") {
+        const wall = document.createElement("span");
+        wall.className = "owg-wall";
+        wall.style.left = `${x * size}px`;
+        wall.style.top = `${y * size}px`;
+        wall.style.width = `${size}px`;
+        wall.style.height = `${size}px`;
+
+        fragment.appendChild(wall);
+        walls.push(wall);
+        return;
+      }
+
+      if (cell === "." || cell === "o") {
+        const element = document.createElement("span");
+        element.className = cell === "o" ? "owg-cup" : "owg-medal";
+        element.style.left = `${(x + 0.5) * size}px`;
+        element.style.top = `${(y + 0.5) * size}px`;
+
+        const img = document.createElement("img");
+        img.src = cell === "o" ? gameImages.cup : gameImages.medal;
+        img.alt = cell === "o" ? "Copa" : "Medalla";
+        img.draggable = false;
+
+        element.appendChild(img);
+        fragment.appendChild(element);
+
+        if (cell === "o") {
+          cups.push({ x, y, element });
+        } else {
+          medals.push({ x, y, element });
+          medalsLeft++;
+        }
+      }
+    });
+  });
+
+  playerElement = document.createElement("span");
+  playerElement.className = "owg-player";
+  playerElement.dataset.dir = player.dir;
+  playerElement.style.left = `${(player.x + 0.5) * size}px`;
+  playerElement.style.top = `${(player.y + 0.5) * size}px`;
+
+  const playerImg = document.createElement("img");
+  playerImg.src = gameImages.player;
+  playerImg.alt = "Protagonista";
+  playerImg.draggable = false;
+
+  playerElement.appendChild(playerImg);
+  fragment.appendChild(playerElement);
+
+  rivalStarts.slice(0, selectedDifficulty.rivals).forEach((start, index) => {
+    const element = document.createElement("span");
+    element.className = "owg-lifeguard";
+    element.style.left = `${(start.x + 0.5) * size}px`;
+    element.style.top = `${(start.y + 0.5) * size}px`;
+
+    const img = document.createElement("img");
+    img.src = index % 2 ? gameImages.rivalB : gameImages.rivalA;
+    img.alt = "Rival";
+    img.draggable = false;
+
+    element.appendChild(img);
+    fragment.appendChild(element);
+
+    rivals.push({
+      x: start.x,
+      y: start.y,
+      startX: start.x,
+      startY: start.y,
+      dir: index % 2 ? "down" : "right",
+      element
+    });
+  });
+
+  board.appendChild(fragment);
+}
   function resetActors() {
     player = { x: startPosition.x, y: startPosition.y, dir: "right" };
     requestedDirection = "right";
