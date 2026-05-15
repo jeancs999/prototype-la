@@ -1,0 +1,1694 @@
+<!doctype html>
+
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+#ollie-whack-game {
+  position: relative;
+  width: min(100%, calc(100vw - 12px));
+  max-width: 520px;
+  height: 470px;
+  margin: 6px auto;
+  padding: 10px;
+  overflow: hidden;
+  border-radius: 16px;
+  background:
+    linear-gradient(rgba(15, 125, 160, 0.15), rgba(15, 125, 160, 0.15)),
+    url("https://i.imgur.com/aCmNnvM.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.24);
+  font-family: Arial, sans-serif;
+  color: #063b42;
+  text-align: center;
+  user-select: none;
+  touch-action: manipulation;
+  box-sizing: border-box;
+}
+
+#ollie-whack-game * {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#ollie-whack-game .owg-screen {
+  position: absolute;
+  inset: 0;
+  display: none;
+  padding: 10px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+#ollie-whack-game .owg-screen.is-active {
+  display: flex;
+}
+
+#ollie-whack-game .owg-panel {
+  width: min(100%, 330px);
+  padding: 14px 12px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.22);
+}
+
+#ollie-whack-game h2 {
+  margin: 0 0 8px;
+  font-size: 22px;
+  line-height: 1.05;
+  color: #063b42;
+}
+
+#ollie-whack-game p {
+  margin: 4px 0;
+  font-size: 14px;
+  line-height: 1.2;
+}
+
+#ollie-whack-game .owg-start-screen {
+  justify-content: flex-end;
+  padding-bottom: 28px;
+  background:
+    linear-gradient(rgba(8, 98, 128, 0.08), rgba(8, 98, 128, 0.08)),
+    url("https://i.imgur.com/aCmNnvM.png") center / cover no-repeat;
+}
+
+#ollie-whack-game .owg-start-panel {
+  width: auto;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+#ollie-whack-game .owg-start-button {
+  min-width: 150px;
+  min-height: 52px;
+  font-size: 18px;
+  border-radius: 16px;
+}
+
+#ollie-whack-game .owg-button {
+  min-height: 42px;
+  min-width: 120px;
+  padding: 9px 18px;
+  border: 0;
+  border-radius: 14px;
+  background: #ff6b6b;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.25);
+  touch-action: manipulation;
+}
+
+#ollie-whack-game .owg-button:active {
+  transform: scale(0.96);
+}
+
+#ollie-whack-game .owg-instructions {
+  margin: 8px 0 12px;
+}
+
+#ollie-whack-game .owg-guide {
+  display: grid;
+  gap: 8px;
+  margin: 8px 0 12px;
+}
+
+#ollie-whack-game .owg-guide-row {
+  display: grid;
+  grid-template-columns: 74px 1fr;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 8px;
+  border-radius: 12px;
+  background: rgba(239, 252, 255, 0.84);
+}
+
+#ollie-whack-game .owg-guide-action {
+  font-size: 13px;
+  font-weight: 800;
+  color: #063b42;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+#ollie-whack-game .owg-guide-icons {
+  display: flex;
+  justify-content: center;
+  gap: 7px;
+}
+
+#ollie-whack-game .owg-guide-token {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  font-size: 22px;
+  background: rgba(255, 255, 255, 0.74);
+  box-shadow: inset 0 0 0 2px rgba(8, 96, 130, 0.12);
+}
+
+#ollie-whack-game .owg-guide-token img {
+  display: block;
+  width: 78%;
+  height: 78%;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+}
+
+#ollie-whack-game .owg-guide-joystick-demo {
+  position: relative;
+  width: 42px;
+  height: 42px;
+  margin: 0 auto;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.92) 0 28%, rgba(255, 255, 255, 0.58) 29% 100%),
+    linear-gradient(180deg, rgba(82, 216, 255, 0.92), rgba(11, 143, 194, 0.92));
+  box-shadow:
+    inset 0 3px 7px rgba(255, 255, 255, 0.58),
+    inset 0 -5px 9px rgba(0, 78, 110, 0.24),
+    0 3px 8px rgba(0, 0, 0, 0.18);
+}
+
+#ollie-whack-game .owg-guide-joystick-demo::before,
+#ollie-whack-game .owg-guide-joystick-demo::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  background: rgba(6, 59, 66, 0.15);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+#ollie-whack-game .owg-guide-joystick-demo::before {
+  width: 72%;
+  height: 1.5px;
+}
+
+#ollie-whack-game .owg-guide-joystick-demo::after {
+  width: 1.5px;
+  height: 72%;
+}
+
+#ollie-whack-game .owg-guide-joystick-knob {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 35% 30%, #ffffff 0 12%, #ffdd75 13% 38%, #ff8c42 39% 100%);
+  box-shadow:
+    inset 0 2px 4px rgba(255, 255, 255, 0.62),
+    inset 0 -3px 5px rgba(120, 47, 0, 0.2),
+    0 2px 5px rgba(0, 0, 0, 0.22);
+  transform: translate(-50%, -50%);
+  z-index: 2;
+}
+
+#ollie-whack-game .owg-guide-bar {
+  width: 100%;
+  height: 9px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(15, 76, 90, 0.18);
+}
+
+#ollie-whack-game .owg-guide-bar span {
+  display: block;
+  width: 72%;
+  height: 100%;
+  border-radius: inherit;
+}
+
+#ollie-whack-game .owg-guide-bar-energy span {
+  background: linear-gradient(90deg, #00c2ff, #5df2a2);
+}
+
+#ollie-whack-game .owg-guide-bar-time span {
+  background: linear-gradient(90deg, #ffd166, #ff6b6b);
+}
+
+#ollie-whack-game .owg-guide-note {
+  margin: 4px 0 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: #31515a;
+  line-height: 1.15;
+}
+
+#ollie-whack-game .owg-level-records {
+  margin: 6px 0 12px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: rgba(239, 252, 255, 0.9);
+}
+
+#ollie-whack-game .owg-level-records p {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 3px 0;
+}
+
+#ollie-whack-game .owg-levels {
+  display: flex;
+  gap: 6px;
+  width: 100%;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+#ollie-whack-game .owg-level-btn {
+  flex: 1;
+  min-width: 0;
+  padding: 9px 5px;
+  font-size: 13px;
+}
+
+#ollie-whack-game .owg-game-screen {
+  justify-content: flex-start;
+  padding: 6px 7px 6px;
+}
+
+#ollie-whack-game .owg-game-screen h2 {
+  display: none;
+}
+
+#ollie-whack-game .owg-game-info {
+  width: min(100%, 430px);
+  padding: 5px 8px;
+  margin-bottom: 5px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 5px 14px rgba(0, 0, 0, 0.16);
+}
+
+#ollie-whack-game .owg-health-shell,
+#ollie-whack-game .owg-time-shell {
+  width: 100%;
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(15, 76, 90, 0.18);
+}
+
+#ollie-whack-game .owg-health-shell {
+  margin: 0 0 4px;
+}
+
+#ollie-whack-game .owg-time-shell {
+  margin: 0;
+}
+
+#ollie-whack-game .owg-health-fill,
+#ollie-whack-game .owg-time-fill {
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  transition: width 0.18s ease;
+}
+
+#ollie-whack-game .owg-health-fill {
+  background: linear-gradient(90deg, #00c2ff, #5df2a2);
+}
+
+#ollie-whack-game .owg-time-fill {
+  background: linear-gradient(90deg, #ffd166, #ff6b6b);
+}
+
+#ollie-whack-game #owgLevelName,
+#ollie-whack-game #owgTimer,
+#ollie-whack-game .owg-time-pill {
+  display: none;
+}
+
+#ollie-whack-game .owg-hud-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin: 4px 0 0;
+  color: #063b42;
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+#ollie-whack-game .owg-hud-row > span:first-child,
+#ollie-whack-game .owg-hud-row > .owg-time-pill {
+  display: none;
+}
+
+#ollie-whack-game .owg-hud-row > span:last-child,
+#ollie-whack-game .owg-points-pill,
+#ollie-whack-game .owg-score-inline {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin: 4px 0 0;
+  color: #063b42;
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+#ollie-whack-game #owgScore {
+  display: inline !important;
+}
+
+#ollie-whack-game .owg-board {
+  position: relative;
+  width: min(100%, 335px);
+  aspect-ratio: 1 / 1;
+  margin: 0 auto 5px;
+  overflow: hidden;
+  border: 5px solid rgba(255, 255, 255, 0.88);
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(23, 164, 210, 0.92), rgba(8, 107, 156, 0.92));
+  box-shadow: inset 0 0 18px rgba(255, 255, 255, 0.2), 0 6px 15px rgba(0, 0, 0, 0.18);
+}
+
+#ollie-whack-game .owg-board::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.16;
+  background:
+    repeating-linear-gradient(90deg, transparent 0 28px, rgba(255, 255, 255, 0.34) 29px 31px),
+    repeating-linear-gradient(0deg, transparent 0 28px, rgba(255, 255, 255, 0.15) 29px 31px);
+}
+
+#ollie-whack-game .owg-wall {
+  position: absolute;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.66);
+  box-shadow: inset 0 -3px 0 rgba(0, 109, 146, 0.16);
+  z-index: 1;
+}
+
+#ollie-whack-game .owg-medal,
+#ollie-whack-game .owg-cup,
+#ollie-whack-game .owg-lifeguard,
+#ollie-whack-game .owg-player {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  width: var(--cell-size);
+  height: var(--cell-size);
+  transform: translate(-50%, -50%);
+  z-index: 4;
+}
+
+#ollie-whack-game .owg-medal {
+  font-size: clamp(15px, calc(var(--cell-size) * 0.58), 21px);
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.22));
+}
+
+#ollie-whack-game .owg-cup {
+  font-size: clamp(20px, calc(var(--cell-size) * 0.72), 27px);
+  animation: owgPulse 0.9s ease-in-out infinite alternate;
+  filter:
+    drop-shadow(0 0 3px rgba(255, 230, 0, 0.95))
+    drop-shadow(0 0 6px rgba(255, 196, 0, 0.75))
+    drop-shadow(0 0 9px rgba(255, 140, 0, 0.55));
+}
+
+#ollie-whack-game .owg-medal img,
+#ollie-whack-game .owg-cup img,
+#ollie-whack-game .owg-lifeguard img {
+  display: block;
+  width: 82%;
+  height: 82%;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+}
+
+#ollie-whack-game .owg-cup img {
+  width: 94%;
+  height: 94%;
+  filter:
+    drop-shadow(0 0 3px rgba(255, 230, 0, 0.9))
+    drop-shadow(0 0 6px rgba(255, 196, 0, 0.7))
+    drop-shadow(0 0 9px rgba(255, 140, 0, 0.5));
+}
+
+#ollie-whack-game .owg-lifeguard img {
+  width: 92%;
+  height: 92%;
+}
+
+#ollie-whack-game .owg-lifeguard {
+  font-size: clamp(20px, calc(var(--cell-size) * 0.72), 27px);
+  transition: left 0.08s linear, top 0.08s linear;
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.22));
+}
+
+#ollie-whack-game .owg-lifeguard.is-scared {
+  opacity: 0.74;
+  filter: hue-rotate(125deg) drop-shadow(0 2px 2px rgba(0, 0, 0, 0.22));
+}
+
+#ollie-whack-game .owg-player {
+  z-index: 5;
+  transition: left 0.08s linear, top 0.08s linear, transform 0.08s linear;
+}
+
+#ollie-whack-game .owg-player::before {
+  content: "";
+  width: clamp(28px, calc(var(--cell-size) * 1), 40px);
+  height: clamp(28px, calc(var(--cell-size) * 1), 40px);
+  border-radius: 0;
+  background: url("https://i.imgur.com/iQIYNHJ.png") center / contain no-repeat;
+  border: none;
+  box-shadow: none;
+}
+
+#ollie-whack-game .owg-player.is-powered::before {
+  box-shadow: none;
+  filter: drop-shadow(0 0 6px rgba(255, 210, 0, 0.85));
+}
+
+#ollie-whack-game .owg-player[data-dir="left"] {
+  transform: translate(-50%, -50%) rotate(180deg);
+}
+
+#ollie-whack-game .owg-player[data-dir="up"] {
+  transform: translate(-50%, -50%) rotate(-90deg);
+}
+
+#ollie-whack-game .owg-player[data-dir="down"] {
+  transform: translate(-50%, -50%) rotate(90deg);
+}
+
+#ollie-whack-game .owg-countdown {
+  position: absolute;
+  inset: 0;
+  display: none;
+  place-items: center;
+  z-index: 8;
+  color: #ffffff;
+  font-size: 64px;
+  font-weight: 900;
+  text-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+  background: rgba(6, 59, 66, 0.18);
+}
+
+#ollie-whack-game .owg-countdown.is-active {
+  display: grid;
+}
+
+#ollie-whack-game .owg-floating-feedback {
+  display: none;
+  min-width: auto;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.94);
+  color: #063b42;
+  font-size: 12px;
+  font-weight: 900;
+  transform: none;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.18);
+  pointer-events: none;
+}
+
+#ollie-whack-game .owg-floating-feedback.is-active {
+  display: inline-block;
+  animation: owgScorePop 0.75s ease both;
+}
+
+#ollie-whack-game .owg-touch-pad {
+  display: none !important;
+}
+
+#ollie-whack-game .owg-dir {
+  display: none !important;
+}
+
+#ollie-whack-game #owgJoystick,
+#ollie-whack-game .owg-joystick {
+  display: block !important;
+  position: relative !important;
+  z-index: 9999 !important;
+  flex: 0 0 auto !important;
+  width: 62px !important;
+  height: 62px !important;
+  min-width: 62px !important;
+  min-height: 62px !important;
+  margin: 0 auto !important;
+  border-radius: 50% !important;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.92) 0 28%, rgba(255, 255, 255, 0.58) 29% 100%),
+    linear-gradient(180deg, rgba(82, 216, 255, 0.92), rgba(11, 143, 194, 0.92)) !important;
+  box-shadow:
+    inset 0 5px 12px rgba(255, 255, 255, 0.58),
+    inset 0 -8px 14px rgba(0, 78, 110, 0.24),
+    0 5px 12px rgba(0, 0, 0, 0.22) !important;
+  touch-action: none !important;
+  user-select: none !important;
+}
+
+#ollie-whack-game #owgJoystick::before,
+#ollie-whack-game #owgJoystick::after,
+#ollie-whack-game .owg-joystick::before,
+#ollie-whack-game .owg-joystick::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  background: rgba(6, 59, 66, 0.15);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+#ollie-whack-game #owgJoystick::before,
+#ollie-whack-game .owg-joystick::before {
+  width: 72%;
+  height: 2px;
+}
+
+#ollie-whack-game #owgJoystick::after,
+#ollie-whack-game .owg-joystick::after {
+  width: 2px;
+  height: 72%;
+}
+
+#ollie-whack-game #owgJoystickKnob,
+#ollie-whack-game .owg-joystick-knob {
+  display: block !important;
+  position: absolute !important;
+  left: 50% !important;
+  top: 50% !important;
+  z-index: 10000 !important;
+  width: 26px !important;
+  height: 26px !important;
+  border-radius: 50% !important;
+  background:
+    radial-gradient(circle at 35% 30%, #ffffff 0 12%, #ffdd75 13% 38%, #ff8c42 39% 100%) !important;
+  box-shadow:
+    inset 0 4px 7px rgba(255, 255, 255, 0.62),
+    inset 0 -5px 9px rgba(120, 47, 0, 0.2),
+    0 4px 9px rgba(0, 0, 0, 0.24) !important;
+  transform: translate(-50%, -50%);
+  transition: transform 0.06s linear;
+}
+
+#ollie-whack-game .owg-feedback {
+  position: absolute;
+  left: 50%;
+  bottom: 6px;
+  z-index: 10;
+  width: min(92%, 340px);
+  min-height: 18px;
+  margin: 0;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.82);
+  color: #0a6675;
+  font-size: 11px;
+  font-weight: 800;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+#ollie-whack-game .owg-feedback:empty {
+  display: none;
+}
+
+#ollie-whack-game .owg-result-screen {
+  background: rgba(5, 88, 120, 0.22);
+}
+
+#ollie-whack-game .owg-result-box {
+  width: min(100%, 330px);
+  padding: 14px 12px;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.24);
+}
+
+#ollie-whack-game .owg-result-box h2 {
+  color: #063b42;
+}
+
+#ollie-whack-game .owg-result-main {
+  font-size: 15px;
+  font-weight: 800;
+}
+
+#ollie-whack-game .owg-result-card {
+  margin: 8px auto;
+  padding: 10px;
+  border-radius: 12px;
+  background: rgba(239, 252, 255, 0.95);
+}
+
+#ollie-whack-game .owg-result-card p {
+  font-weight: 700;
+}
+
+#ollie-whack-game .owg-game-link {
+  color: #0a6675;
+  font-size: 13px;
+}
+
+#ollie-whack-game .owg-final-message {
+  min-height: 18px;
+  font-weight: 800;
+}
+
+#ollie-whack-game .owg-result-actions {
+  display: grid;
+  gap: 8px;
+  justify-items: center;
+}
+
+#ollie-whack-game .owg-result-actions button {
+  width: min(100%, 230px);
+}
+
+#ollie-whack-game .owg-button-share {
+  background: #14b8a6;
+}
+
+#ollie-whack-game .owg-button-again {
+  background: #ff6b6b;
+}
+
+@keyframes owgPulse {
+  from {
+    transform: translate(-50%, -50%) scale(0.95);
+    filter:
+      drop-shadow(0 0 3px rgba(255, 230, 0, 0.9))
+      drop-shadow(0 0 6px rgba(255, 196, 0, 0.7))
+      drop-shadow(0 0 9px rgba(255, 140, 0, 0.5));
+  }
+
+  to {
+    transform: translate(-50%, -50%) scale(1.12);
+    filter:
+      drop-shadow(0 0 4px rgba(255, 255, 80, 0.95))
+      drop-shadow(0 0 8px rgba(255, 210, 0, 0.8))
+      drop-shadow(0 0 12px rgba(255, 145, 0, 0.6));
+  }
+}
+
+@keyframes owgScorePop {
+  0% {
+    opacity: 0;
+    transform: translateY(4px) scale(0.9);
+  }
+
+  20% {
+    opacity: 1;
+    transform: translateY(0) scale(1.08);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(-8px) scale(1);
+  }
+}
+
+@media (max-width: 420px) {
+  #ollie-whack-game {
+    height: 460px;
+    padding: 6px;
+  }
+
+  #ollie-whack-game .owg-screen {
+    padding: 6px;
+  }
+
+  #ollie-whack-game .owg-panel {
+    width: min(100%, 315px);
+    padding: 12px 10px;
+  }
+
+  #ollie-whack-game h2 {
+    font-size: 20px;
+  }
+
+  #ollie-whack-game p {
+    font-size: 13px;
+  }
+
+  #ollie-whack-game .owg-game-screen {
+    padding-top: 6px;
+  }
+
+  #ollie-whack-game .owg-game-info {
+    width: min(100%, 398px);
+    padding: 5px 7px;
+    margin-bottom: 4px;
+  }
+
+  #ollie-whack-game .owg-board {
+    width: min(100%, 335px);
+    border-width: 5px;
+    margin-bottom: 4px;
+  }
+
+  #ollie-whack-game #owgJoystick,
+  #ollie-whack-game .owg-joystick {
+    width: 58px !important;
+    height: 58px !important;
+    min-width: 58px !important;
+    min-height: 58px !important;
+  }
+
+  #ollie-whack-game #owgJoystickKnob,
+  #ollie-whack-game .owg-joystick-knob {
+    width: 24px !important;
+    height: 24px !important;
+  }
+
+  #ollie-whack-game .owg-result-box {
+    width: min(100%, 315px);
+  }
+
+  #ollie-whack-game .owg-start-screen {
+    padding-bottom: 24px;
+  }
+
+  #ollie-whack-game .owg-start-button {
+    min-width: 142px;
+    min-height: 50px;
+  }
+
+  #ollie-whack-game .owg-guide {
+    gap: 7px;
+  }
+
+  #ollie-whack-game .owg-guide-row {
+    grid-template-columns: 68px 1fr;
+    padding: 6px 7px;
+  }
+
+  #ollie-whack-game .owg-guide-action {
+    font-size: 12px;
+  }
+
+  #ollie-whack-game .owg-guide-token {
+    width: 30px;
+    height: 30px;
+    font-size: 19px;
+  }
+
+  #ollie-whack-game .owg-guide-joystick-demo {
+    width: 38px;
+    height: 38px;
+  }
+
+  #ollie-whack-game .owg-guide-joystick-knob {
+    width: 16px;
+    height: 16px;
+  }
+}
+</style>
+
+
+
+</head>
+<body>
+
+<div id="ollie-whack-game">
+  <section id="owgStartScreen" class="owg-screen owg-start-screen is-active">
+    <div class="owg-panel owg-start-panel">
+      <button id="owgGoInstructions" class="owg-button owg-start-button" type="button">Jugar</button>
+    </div>
+  </section>
+
+  <section id="owgInstructionsScreen" class="owg-screen">
+    <div class="owg-panel">
+      <h2>Laberinto Acu&aacute;tico</h2>
+      <div class="owg-instructions owg-guide">
+        <div class="owg-guide-row">
+  <span class="owg-guide-action">Nada</span>
+  <div>
+    <div class="owg-guide-joystick-demo">
+      <span class="owg-guide-joystick-knob"></span>
+    </div>
+    <p class="owg-guide-note">Arrastra el joystick para mover la tabla por los carriles.</p>
+  </div>
+</div>
+        <div class="owg-guide-row">
+          <span class="owg-guide-action">Energ&iacute;a</span>
+          <div>
+            <div class="owg-guide-bar owg-guide-bar-energy"><span></span></div>
+            <p class="owg-guide-note">La barra superior baja si chocas.</p>
+          </div>
+        </div>
+        <div class="owg-guide-row">
+          <span class="owg-guide-action">Tiempo</span>
+          <div>
+            <div class="owg-guide-bar owg-guide-bar-time"><span></span></div>
+            <p class="owg-guide-note">La barra inferior marca el tiempo.</p>
+          </div>
+        </div>
+        <div class="owg-guide-row">
+          <span class="owg-guide-action">Junta</span>
+          <div>
+            <div class="owg-guide-icons">
+              <span class="owg-guide-token">
+  <img src="https://i.imgur.com/qrVAqlC.png" alt="Medalla">
+</span>
+<span class="owg-guide-token">
+  <img src="https://i.imgur.com/qrVAqlC.png" alt="Medalla">
+</span>
+<span class="owg-guide-token">
+  <img src="https://i.imgur.com/qrVAqlC.png" alt="Medalla">
+</span>
+            </div>
+            <p class="owg-guide-note">Las medallas suman puntos.</p>
+          </div>
+        </div>
+        <div class="owg-guide-row">
+          <span class="owg-guide-action">Copa</span>
+          <div>
+            <div class="owg-guide-icons">
+              <span class="owg-guide-token">
+  <img src="https://i.imgur.com/wmGEzst.png" alt="Copa">
+</span>  
+            </div>
+            <p class="owg-guide-note">Activa poder especial.</p>
+          </div>
+        </div>
+      </div>
+      <button id="owgGoLevels" class="owg-button" type="button">Continuar</button>
+    </div>
+  </section>
+
+  <section id="owgLevelScreen" class="owg-screen">
+    <div class="owg-panel">
+      <h2>Copa Deporclub</h2>
+      <div class="owg-level-records">
+        <p>F&aacute;cil: <span id="owgHighscoreFacil">0</span></p>
+        <p>Medio: <span id="owgHighscoreMedio">0</span></p>
+        <p>Dif&iacute;cil: <span id="owgHighscoreDificil">0</span></p>
+      </div>
+      <div class="owg-levels">
+        <button class="owg-button owg-level-btn" type="button" data-level="facil">F&aacute;cil</button>
+        <button class="owg-button owg-level-btn" type="button" data-level="medio">Medio</button>
+        <button class="owg-button owg-level-btn" type="button" data-level="dificil">Dif&iacute;cil</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="owgGameScreen" class="owg-screen owg-game-screen">
+    <div class="owg-game-info">
+      <div class="owg-health-shell"><div id="owgHealthFill" class="owg-health-fill"></div></div>
+      <div class="owg-time-shell"><div id="owgTimeFill" class="owg-time-fill"></div></div>
+      <p class="owg-hud-row">
+        <span>Nivel: <span id="owgLevelName">-</span></span>
+        <span class="owg-time-pill">⏱ <span id="owgTimer">60</span>s</span>
+        <span>Puntos: <span id="owgScore">0</span></span>
+      </p>
+    </div>
+    <div id="owgBoard" class="owg-board">
+      <div id="owgCountdown" class="owg-countdown" aria-live="polite"></div>
+      <div id="owgFloatingFeedback" class="owg-floating-feedback" aria-hidden="true"></div>
+    </div>
+    <div class="owg-joystick" id="owgJoystick" aria-label="Joystick de movimiento">
+  <div class="owg-joystick-knob" id="owgJoystickKnob"></div>
+</div>
+   
+    <p id="owgFeedback" class="owg-feedback"></p>
+  </section>
+
+  <section id="owgResultScreen" class="owg-screen owg-result-screen">
+    <div id="owgResultBox" class="owg-result-box">
+      <h2>Resultado</h2>
+      <p class="owg-result-main">Reto acu&aacute;tico completado</p>
+      <div class="owg-result-card">
+        <p>Nivel: <span id="owgFinalLevel">-</span></p>
+        <p>Puntaje final: <span id="owgFinalScore">0</span></p>
+        <p>Rango: <span id="owgFinalRank">Nadador</span></p>
+        <p>R&eacute;cord: <span id="owgFinalHighscore">0</span></p>
+        <p class="owg-game-link">Copa Deporclub</p>
+      </div>
+      <p id="owgFinalMessage" class="owg-final-message"></p>
+      <div class="owg-result-actions">
+        <button id="owgShareResult" class="owg-button owg-button-share" type="button">Compartir resultado</button>
+        <button id="owgPlayAgain" class="owg-button owg-button-again" type="button">Reiniciar</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
+<script>
+(function () {
+  const isInstagram = /Instagram/i.test(navigator.userAgent);
+
+  if (isInstagram) {
+    setTimeout(() => {
+      alert("Para compartir tu resultado, abre este juego en Chrome o Safari.");
+    }, 1000);
+  }
+
+  const gameRoot = document.getElementById("ollie-whack-game");
+  const startScreen = document.getElementById("owgStartScreen");
+  const instructionsScreen = document.getElementById("owgInstructionsScreen");
+  const levelScreen = document.getElementById("owgLevelScreen");
+  const gameScreen = document.getElementById("owgGameScreen");
+  const resultScreen = document.getElementById("owgResultScreen");
+
+  const goInstructionsBtn = document.getElementById("owgGoInstructions");
+  const goLevelsBtn = document.getElementById("owgGoLevels");
+  const levelButtons = gameRoot.querySelectorAll(".owg-level-btn");
+  const playAgainBtn = document.getElementById("owgPlayAgain");
+  const shareResultBtn = document.getElementById("owgShareResult");
+  const directionButtons = gameRoot.querySelectorAll(".owg-dir");
+
+  const board = document.getElementById("owgBoard");
+  const countdownText = document.getElementById("owgCountdown");
+  const floatingFeedback = document.getElementById("owgFloatingFeedback");
+  const scoreText = document.getElementById("owgScore");
+  const timerText = document.getElementById("owgTimer");
+  const levelNameText = document.getElementById("owgLevelName");
+  const feedbackText = document.getElementById("owgFeedback");
+  const healthFill = document.getElementById("owgHealthFill");
+  const timeFill = document.getElementById("owgTimeFill");
+
+  const highscoreFacilText = document.getElementById("owgHighscoreFacil");
+  const highscoreMedioText = document.getElementById("owgHighscoreMedio");
+  const highscoreDificilText = document.getElementById("owgHighscoreDificil");
+
+  const finalLevelText = document.getElementById("owgFinalLevel");
+  const finalScoreText = document.getElementById("owgFinalScore");
+  const finalRankText = document.getElementById("owgFinalRank");
+  const finalHighscoreText = document.getElementById("owgFinalHighscore");
+  const finalMessageText = document.getElementById("owgFinalMessage");
+  const resultBox = document.getElementById("owgResultBox");
+  const gameImages = {
+  medal: "https://i.imgur.com/Mrtl6dh.png",
+  cup: "https://i.imgur.com/wmGEzst.png",
+  rivalA: "https://i.imgur.com/wDwklC8.png",
+  rivalB: "https://i.imgur.com/poXsiFD.png"
+};
+  const maze = [
+    "#############",
+    "#o.........o#",
+    "#.###.#.###.#",
+    "#.#.......#.#",
+    "#.#.##.##.#.#",
+    "#...........#",
+    "###.#.#.#.###",
+    "#...........#",
+    "#.#.##.##.#.#",
+    "#.#.......#.#",
+    "#.###.#.###.#",
+    "#o.........o#",
+    "#############"
+  ];
+
+  const directions = {
+    left: { x: -1, y: 0 },
+    right: { x: 1, y: 0 },
+    up: { x: 0, y: -1 },
+    down: { x: 0, y: 1 }
+  };
+
+  const difficulties = {
+    facil: { name: "Fácil", playerDelay: 190, rivalDelay: 470, rivals: 2, time: 60 },
+    medio: { name: "Medio", playerDelay: 175, rivalDelay: 380, rivals: 3, time: 60 },
+    dificil: { name: "Difícil", playerDelay: 155, rivalDelay: 305, rivals: 4, time: 60 }
+  };
+
+  const defaultHighscores = {
+    facil: 0,
+    medio: 0,
+    dificil: 0
+  };
+
+  const startPosition = { x: 6, y: 11 };
+  const rivalStarts = [
+    { x: 6, y: 1 },
+    { x: 1, y: 1 },
+    { x: 11, y: 1 },
+    { x: 6, y: 7 }
+  ];
+
+  let score = 0;
+  let energy = 100;
+  let timeLeft = 60;
+  let selectedLevel = "medio";
+  let selectedDifficulty = difficulties.medio;
+  let gameActive = false;
+  let medalsLeft = 0;
+  let player = { x: startPosition.x, y: startPosition.y, dir: "right" };
+  let requestedDirection = "right";
+  let rivals = [];
+  let walls = [];
+  let medals = [];
+  let cups = [];
+  let playerElement = null;
+  let powerUntil = 0;
+  let playerInterval = null;
+  let rivalInterval = null;
+  let timerInterval = null;
+  let countdownInterval = null;
+  let countdownTimeout = null;
+  let feedbackTimeout = null;
+  let floatingFeedbackTimeout = null;
+
+  let highscores = JSON.parse(localStorage.getItem("aquaticMazeHighscores")) || defaultHighscores;
+
+  highscores = {
+    ...defaultHighscores,
+    ...highscores
+  };
+
+  function saveHighscores() {
+    localStorage.setItem("aquaticMazeHighscores", JSON.stringify(highscores));
+  }
+
+  function getCurrentHighscore() {
+    return highscores[selectedLevel] || 0;
+  }
+
+  function updateHighscoreDisplays() {
+    highscoreFacilText.textContent = highscores.facil || 0;
+    highscoreMedioText.textContent = highscores.medio || 0;
+    highscoreDificilText.textContent = highscores.dificil || 0;
+  }
+
+  function showScreen(screen) {
+    [startScreen, instructionsScreen, levelScreen, gameScreen, resultScreen].forEach((item) => {
+      item.classList.remove("is-active");
+    });
+
+    screen.classList.add("is-active");
+  }
+
+  function updateEnergyDisplay() {
+    healthFill.style.width = `${Math.max(0, energy)}%`;
+  }
+
+  function updateTimeDisplay() {
+    const totalTime = selectedDifficulty.time || 60;
+    const percent = Math.max(0, Math.min(100, (timeLeft / totalTime) * 100));
+    timeFill.style.width = `${percent}%`;
+  }
+
+  function updateScoreDisplay() {
+    scoreText.textContent = score;
+  }
+
+  function showFloatingFeedback(message) {
+    floatingFeedback.textContent = message;
+    floatingFeedback.classList.remove("is-active");
+    void floatingFeedback.offsetWidth;
+    floatingFeedback.classList.add("is-active");
+
+    clearTimeout(floatingFeedbackTimeout);
+    floatingFeedbackTimeout = setTimeout(() => {
+      floatingFeedback.classList.remove("is-active");
+    }, 760);
+  }
+
+  function showFeedback(message, floatingMessage) {
+    feedbackText.textContent = message;
+    clearTimeout(feedbackTimeout);
+
+    if (floatingMessage) {
+      showFloatingFeedback(floatingMessage);
+    }
+
+    feedbackTimeout = setTimeout(() => {
+      feedbackText.textContent = "";
+    }, 900);
+  }
+
+  function cellSize() {
+    return board.clientWidth / maze.length;
+  }
+
+  function cellCenter(value) {
+    return (value + 0.5) * cellSize();
+  }
+
+  function placeElement(element, x, y) {
+    element.style.left = `${cellCenter(x)}px`;
+    element.style.top = `${cellCenter(y)}px`;
+  }
+
+  function isWall(x, y) {
+    return !maze[y] || maze[y][x] === "#";
+  }
+
+  function canMove(x, y) {
+    return !isWall(x, y);
+  }
+
+  function drawMaze() {
+    board.style.setProperty("--cell-size", `${cellSize()}px`);
+    walls.forEach((item) => item.remove());
+    medals.forEach((item) => item.element.remove());
+    cups.forEach((item) => item.element.remove());
+    rivals.forEach((item) => item.element.remove());
+    if (playerElement) playerElement.remove();
+
+    walls = [];
+    medals = [];
+    cups = [];
+    rivals = [];
+    medalsLeft = 0;
+
+    maze.forEach((row, y) => {
+      row.split("").forEach((cell, x) => {
+        if (cell === "#") {
+          const wall = document.createElement("span");
+          wall.className = "owg-wall";
+          wall.style.left = `${x * cellSize()}px`;
+          wall.style.top = `${y * cellSize()}px`;
+          wall.style.width = `${cellSize()}px`;
+          wall.style.height = `${cellSize()}px`;
+          board.appendChild(wall);
+          walls.push(wall);
+          return;
+        }
+
+        if (cell === "." || cell === "o") {
+          const element = document.createElement("span");
+          element.className = cell === "o" ? "owg-cup" : "owg-medal";
+
+const img = document.createElement("img");
+img.src = cell === "o" ? gameImages.cup : gameImages.medal;
+img.alt = cell === "o" ? "Copa" : "Medalla";
+img.draggable = false;
+
+element.appendChild(img);
+placeElement(element, x, y);
+board.appendChild(element);
+
+          if (cell === "o") {
+            cups.push({ x, y, element });
+          } else {
+            medals.push({ x, y, element });
+            medalsLeft++;
+          }
+        }
+      });
+    });
+
+    playerElement = document.createElement("span");
+    playerElement.className = "owg-player";
+    playerElement.dataset.dir = player.dir;
+    board.appendChild(playerElement);
+    placeElement(playerElement, player.x, player.y);
+
+    rivalStarts.slice(0, selectedDifficulty.rivals).forEach((start, index) => {
+      const element = document.createElement("span");
+      element.className = "owg-lifeguard";
+
+const img = document.createElement("img");
+img.src = index % 2 ? gameImages.rivalB : gameImages.rivalA;
+img.alt = "Rival";
+img.draggable = false;
+
+element.appendChild(img);
+board.appendChild(element);
+      rivals.push({
+        x: start.x,
+        y: start.y,
+        startX: start.x,
+        startY: start.y,
+        dir: index % 2 ? "down" : "right",
+        element
+      });
+      placeElement(element, start.x, start.y);
+    });
+  }
+
+  function resetActors() {
+    player = { x: startPosition.x, y: startPosition.y, dir: "right" };
+    requestedDirection = "right";
+    placeElement(playerElement, player.x, player.y);
+    playerElement.dataset.dir = player.dir;
+
+    rivals.forEach((rival) => {
+      rival.x = rival.startX;
+      rival.y = rival.startY;
+      placeElement(rival.element, rival.x, rival.y);
+    });
+  }
+
+  function collectCurrentCell() {
+    const medalIndex = medals.findIndex((item) => item.x === player.x && item.y === player.y);
+    if (medalIndex >= 0) {
+      medals[medalIndex].element.remove();
+      medals.splice(medalIndex, 1);
+      medalsLeft--;
+      score += 10;
+      updateScoreDisplay();
+      showFloatingFeedback("+10");
+
+      if (medalsLeft <= 0) {
+        score += Math.max(0, timeLeft) * 4;
+        updateScoreDisplay();
+        showFloatingFeedback(`+${Math.max(0, timeLeft) * 4}`);
+        endGame("complete");
+      }
+
+      return;
+    }
+
+    const cupIndex = cups.findIndex((item) => item.x === player.x && item.y === player.y);
+    if (cupIndex >= 0) {
+      cups[cupIndex].element.remove();
+      cups.splice(cupIndex, 1);
+      score += 60;
+      powerUntil = Date.now() + 7000;
+      playerElement.classList.add("is-powered");
+      updateScoreDisplay();
+      showFloatingFeedback("Copa tomada. 7 segundos de impulso.", "+60");
+    }
+  }
+
+  function isPowered() {
+    return Date.now() < powerUntil;
+  }
+
+  function movePlayer() {
+    if (!gameActive) return;
+
+    const requested = directions[requestedDirection];
+    if (requested && canMove(player.x + requested.x, player.y + requested.y)) {
+      player.dir = requestedDirection;
+    }
+
+    const current = directions[player.dir];
+    if (current && canMove(player.x + current.x, player.y + current.y)) {
+      player.x += current.x;
+      player.y += current.y;
+      placeElement(playerElement, player.x, player.y);
+      playerElement.dataset.dir = player.dir;
+      collectCurrentCell();
+      checkRivalCollision();
+    }
+
+    if (!isPowered()) {
+      playerElement.classList.remove("is-powered");
+      rivals.forEach((rival) => rival.element.classList.remove("is-scared"));
+    } else {
+      rivals.forEach((rival) => rival.element.classList.add("is-scared"));
+    }
+  }
+
+  function distance(a, b) {
+    return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
+  }
+
+  function validMoves(actor) {
+    return Object.entries(directions)
+      .map(([dir, move]) => ({
+        dir,
+        x: actor.x + move.x,
+        y: actor.y + move.y
+      }))
+      .filter((move) => canMove(move.x, move.y));
+  }
+
+  function moveRivals() {
+    if (!gameActive) return;
+
+    rivals.forEach((rival) => {
+      const moves = validMoves(rival);
+      if (!moves.length) return;
+
+      const reverse = {
+        left: "right",
+        right: "left",
+        up: "down",
+        down: "up"
+      }[rival.dir];
+
+      const candidates = moves.length > 1 ? moves.filter((move) => move.dir !== reverse) : moves;
+      const sorted = candidates.sort((a, b) => {
+        const aDistance = distance(a, player);
+        const bDistance = distance(b, player);
+        return isPowered() ? bDistance - aDistance : aDistance - bDistance;
+      });
+
+      const best = Math.random() < 0.78 ? sorted[0] : sorted[Math.floor(Math.random() * sorted.length)];
+      rival.x = best.x;
+      rival.y = best.y;
+      rival.dir = best.dir;
+      placeElement(rival.element, rival.x, rival.y);
+    });
+
+    checkRivalCollision();
+  }
+
+  function checkRivalCollision() {
+    const rival = rivals.find((item) => item.x === player.x && item.y === player.y);
+    if (!rival) return;
+
+    if (isPowered()) {
+      score += 80;
+      updateScoreDisplay();
+      showFloatingFeedback("Salvavidas esquivado. +80 puntos.", "+80");
+      rival.x = rival.startX;
+      rival.y = rival.startY;
+      placeElement(rival.element, rival.x, rival.y);
+      return;
+    }
+
+    energy = Math.max(0, energy - 25);
+    updateEnergyDisplay();
+    showFloatingFeedback("-25%");
+
+    if (energy <= 0) {
+      endGame("energy");
+      return;
+    }
+
+    showFloatingFeedback("Choque en el carril. -25% energía.");
+    resetActors();
+  }
+
+  function getRank() {
+    if (score >= 900) return "Campeón";
+    if (score >= 520) return "Finalista";
+    return "Nadador";
+  }
+
+  function beginActiveGame() {
+    if (!gameActive) return;
+
+    countdownText.classList.remove("is-active");
+    countdownText.textContent = "";
+
+    playerInterval = setInterval(movePlayer, selectedDifficulty.playerDelay);
+    rivalInterval = setInterval(moveRivals, selectedDifficulty.rivalDelay);
+
+    timerInterval = setInterval(() => {
+      timeLeft--;
+      timerText.textContent = timeLeft;
+      updateTimeDisplay();
+
+      if (timeLeft <= 0) {
+        endGame("time");
+      }
+    }, 1000);
+  }
+
+  function startCountdown() {
+    let count = 3;
+
+    countdownText.textContent = count;
+    countdownText.classList.add("is-active");
+
+    countdownInterval = setInterval(() => {
+      count--;
+
+      if (count > 0) {
+        countdownText.textContent = count;
+        return;
+      }
+
+      clearInterval(countdownInterval);
+      countdownInterval = null;
+      countdownText.textContent = "¡Ya!";
+      countdownTimeout = setTimeout(() => {
+        countdownTimeout = null;
+        beginActiveGame();
+      }, 500);
+    }, 1000);
+  }
+
+  function stopLoops() {
+    clearInterval(playerInterval);
+    clearInterval(rivalInterval);
+    clearInterval(timerInterval);
+    clearInterval(countdownInterval);
+    clearTimeout(feedbackTimeout);
+    clearTimeout(floatingFeedbackTimeout);
+    clearTimeout(countdownTimeout);
+  }
+
+  function startGame(level) {
+    selectedLevel = level;
+    selectedDifficulty = difficulties[level];
+
+    score = 0;
+    energy = 100;
+    timeLeft = selectedDifficulty.time;
+    gameActive = true;
+    powerUntil = 0;
+
+    stopLoops();
+    updateScoreDisplay();
+    updateEnergyDisplay();
+    updateTimeDisplay();
+    timerText.textContent = timeLeft;
+    levelNameText.textContent = selectedDifficulty.name;
+    feedbackText.textContent = "";
+    floatingFeedback.textContent = "";
+    floatingFeedback.classList.remove("is-active");
+
+    player = { x: startPosition.x, y: startPosition.y, dir: "right" };
+    requestedDirection = "right";
+    showScreen(gameScreen);
+    drawMaze();
+    startCountdown();
+  }
+
+  function endGame(reason) {
+    if (!gameActive) return;
+    gameActive = false;
+
+    stopLoops();
+    feedbackText.textContent = "";
+    floatingFeedback.classList.remove("is-active");
+    countdownText.classList.remove("is-active");
+    countdownText.textContent = "";
+    powerUntil = 0;
+
+    const currentHighscore = getCurrentHighscore();
+
+    if (score > currentHighscore) {
+      highscores[selectedLevel] = score;
+      saveHighscores();
+      finalMessageText.textContent = "Nuevo récord acuático.";
+    } else if (reason === "complete") {
+      finalMessageText.textContent = "Recogiste todas las medallas.";
+    } else if (reason === "energy") {
+      finalMessageText.textContent = "Tabilo perdió energía. Inténtalo otra vez.";
+    } else {
+      finalMessageText.textContent = "Tiempo terminado. Puedes nadar mejor.";
+    }
+
+    updateHighscoreDisplays();
+
+    finalLevelText.textContent = selectedDifficulty.name;
+    finalScoreText.textContent = score;
+    finalRankText.textContent = getRank();
+    finalHighscoreText.textContent = getCurrentHighscore();
+
+    showScreen(resultScreen);
+  }
+
+  function goToStart() {
+    gameActive = false;
+    stopLoops();
+
+    score = 0;
+    energy = 100;
+    timeLeft = 60;
+    powerUntil = 0;
+    updateScoreDisplay();
+    updateEnergyDisplay();
+    updateTimeDisplay();
+    timerText.textContent = "60";
+    levelNameText.textContent = "-";
+    feedbackText.textContent = "";
+    floatingFeedback.textContent = "";
+    floatingFeedback.classList.remove("is-active");
+    countdownText.classList.remove("is-active");
+    countdownText.textContent = "";
+
+    updateHighscoreDisplays();
+    showScreen(startScreen);
+  }
+
+  async function shareResultImage() {
+    if (!window.html2canvas) {
+      alert("No se pudo generar la imagen. Verifica que html2canvas esté cargado.");
+      return;
+    }
+
+    const canvas = await html2canvas(resultBox, {
+      backgroundColor: "#ffffff",
+      scale: 2,
+      useCORS: true
+    });
+
+    canvas.toBlob(async (blob) => {
+      const file = new File([blob], "resultado-laberinto-acuatico.png", {
+        type: "image/png"
+      });
+
+      const text = `Hice ${score} puntos y rango ${getRank()} en Laberinto Acuático - Copa Deporclub. ¿Puedes superarme?`;
+
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        try {
+          await navigator.share({
+            title: "Laberinto Acuático",
+            text: text,
+            files: [file]
+          });
+        } catch (error) {
+          console.log("El usuario canceló compartir.");
+        }
+      } else {
+        const link = document.createElement("a");
+        link.download = "resultado-laberinto-acuatico.png";
+        link.href = URL.createObjectURL(blob);
+        link.click();
+
+        alert("Imagen descargada. Ahora puedes subirla a tu historia o estado.");
+      }
+    }, "image/png");
+  }
+
+  function setDirection(direction) {
+    if (directions[direction]) {
+      requestedDirection = direction;
+    }
+  }
+
+  goInstructionsBtn.addEventListener("click", function () {
+    showScreen(instructionsScreen);
+  });
+
+  goLevelsBtn.addEventListener("click", function () {
+    updateHighscoreDisplays();
+    showScreen(levelScreen);
+  });
+
+  levelButtons.forEach((button) => {
+    button.addEventListener("click", function () {
+      startGame(this.dataset.level);
+    });
+  });
+
+  const joystick = document.getElementById("owgJoystick");
+const joystickKnob = document.getElementById("owgJoystickKnob");
+
+let joystickPointerId = null;
+let joystickLastDirection = "";
+
+function getJoystickDirection(x, y) {
+  const absX = Math.abs(x);
+  const absY = Math.abs(y);
+  const deadZone = 8;
+
+  if (absX < deadZone && absY < deadZone) {
+    return "";
+  }
+
+  if (absX > absY) {
+    return x > 0 ? "right" : "left";
+  }
+
+  return y > 0 ? "down" : "up";
+}
+
+function moveJoystick(clientX, clientY) {
+  if (!joystick || !joystickKnob) return;
+
+  const rect = joystick.getBoundingClientRect();
+  const centerX = rect.width / 2;
+  const centerY = rect.height / 2;
+
+  const rawX = clientX - rect.left - centerX;
+  const rawY = clientY - rect.top - centerY;
+
+  const maxDistance = rect.width * 0.25;
+  const distance = Math.sqrt(rawX * rawX + rawY * rawY);
+  const limitedDistance = Math.min(distance, maxDistance);
+  const angle = Math.atan2(rawY, rawX);
+
+  const limitedX = Math.cos(angle) * limitedDistance;
+  const limitedY = Math.sin(angle) * limitedDistance;
+
+  joystickKnob.style.transform = `translate(calc(-50% + ${limitedX}px), calc(-50% + ${limitedY}px))`;
+
+  const direction = getJoystickDirection(limitedX, limitedY);
+
+  if (direction && direction !== joystickLastDirection) {
+    joystickLastDirection = direction;
+    setDirection(direction);
+  }
+}
+
+function resetJoystick() {
+  if (!joystickKnob) return;
+
+  joystickKnob.style.transform = "translate(-50%, -50%)";
+  joystickPointerId = null;
+  joystickLastDirection = "";
+}
+
+if (joystick && joystickKnob) {
+  joystick.addEventListener("pointerdown", function (event) {
+    joystickPointerId = event.pointerId;
+    joystick.setPointerCapture(joystickPointerId);
+    moveJoystick(event.clientX, event.clientY);
+  });
+
+  joystick.addEventListener("pointermove", function (event) {
+    if (event.pointerId !== joystickPointerId) return;
+    moveJoystick(event.clientX, event.clientY);
+  });
+
+  joystick.addEventListener("pointerup", resetJoystick);
+  joystick.addEventListener("pointercancel", resetJoystick);
+}
+
+  window.addEventListener("keydown", (event) => {
+    const keyMap = {
+      ArrowUp: "up",
+      ArrowDown: "down",
+      ArrowLeft: "left",
+      ArrowRight: "right",
+      w: "up",
+      s: "down",
+      a: "left",
+      d: "right"
+    };
+
+    if (keyMap[event.key]) {
+      event.preventDefault();
+      setDirection(keyMap[event.key]);
+    }
+  });
+
+  playAgainBtn.addEventListener("click", goToStart);
+  shareResultBtn.addEventListener("click", shareResultImage);
+  updateHighscoreDisplays();
+  updateEnergyDisplay();
+})();
+</script>
+
+</body>
+</html>
