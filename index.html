@@ -473,13 +473,7 @@
 }
 
 #ollie-whack-game .owg-player::before {
-  content: "";
-  width: clamp(28px, calc(var(--cell-size) * 1), 40px);
-  height: clamp(28px, calc(var(--cell-size) * 1), 40px);
-  border-radius: 0;
-  background: url("https://i.imgur.com/iQIYNHJ.png") center / contain no-repeat;
-  border: none;
-  box-shadow: none;
+  content: none;
 }
 
 #ollie-whack-game .owg-player.is-powered::before {
@@ -1002,6 +996,7 @@
   cup: "https://i.imgur.com/wmGEzst.png",
   rivalA: "https://i.imgur.com/wDwklC8.png",
   rivalB: "https://i.imgur.com/poXsiFD.png"
+  player: "https://i.imgur.com/AN0QRxb.png"
 };
   const maze = [
     "#############",
